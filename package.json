@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "prisma:validate": "prisma validate",
@@ -28,6 +29,7 @@
     "jose": "^6.2.2",
     "lucide-react": "^0.577.0",
     "next": "16.2.0",
+    "prisma": "^7.5.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.0",
@@ -43,7 +45,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.0",
-    "prisma": "^7.5.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
