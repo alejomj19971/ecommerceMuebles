@@ -1,0 +1,123 @@
+// Esquema alineado con RBAC, catálogo/recetas y ventas (tablas en español).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Rol {
+  id        BigInt @id @default(autoincrement())
+  nombreRol String @unique @map("nombre_rol")
+
+  usuarios      Usuario[]
+  rolesPermisos RolesPermiso[]
+
+  @@map("roles")
+}
+
+model Permiso {
+  id          BigInt @id @default(autoincrement())
+  descripcion String
+
+  rolesPermisos RolesPermiso[]
+
+  @@map("permisos")
+}
+
+model RolesPermiso {
+  idRol     BigInt @map("id_rol")
+  idPermiso BigInt @map("id_permiso")
+
+  rol     Rol     @relation(fields: [idRol], references: [id], onDelete: Cascade)
+  permiso Permiso @relation(fields: [idPermiso], references: [id], onDelete: Cascade)
+
+  @@id([idRol, idPermiso])
+  @@map("roles_permisos")
+}
+
+model Usuario {
+  id       BigInt @id @default(autoincrement())
+  nombre   String
+  email    String @unique
+  password String @map("password")
+  idRol    BigInt @map("id_rol")
+
+  rol    Rol     @relation(fields: [idRol], references: [id], onDelete: Restrict)
+  ventas Venta[]
+
+  @@map("usuarios")
+}
+
+model Material {
+  id           BigInt @id @default(autoincrement())
+  nombre       String
+  /** Slug: mano_de_obra, espumas, telas, esqueletos, herraje, guata, patas_madera, rodachines, tapicero */
+  categoria    String @default("telas")
+  unidadMedida String @map("unidad_medida")
+  precioUnitario Decimal @map("precio_unitario") @db.Decimal(12, 2)
+
+  productoMateriales ProductoMaterial[]
+
+  @@index([categoria])
+  @@map("materiales")
+}
+
+model Producto {
+  id           BigInt   @id @default(autoincrement())
+  nombre       String
+  categoria    String   @default("general")
+  precio_venta Decimal  @db.Decimal(12, 2)
+  precioFabricacion Decimal @map("precio_fabricacion") @db.Decimal(12, 2) @default(0)
+  /** URL de imagen (ej. Unsplash o Cloudinary); si es null, la API usa placeholder. */
+  imagen_url   String?  @map("imagen_url")
+
+  productoMateriales ProductoMaterial[]
+  detalleVentas      DetalleVenta[]
+
+  @@index([categoria])
+  @@map("productos")
+}
+
+model ProductoMaterial {
+  idProducto BigInt @map("id_producto")
+  idMaterial BigInt @map("id_material")
+  cantidad   Decimal @db.Decimal(14, 4)
+
+  producto Producto @relation(fields: [idProducto], references: [id], onDelete: Cascade)
+  material Material @relation(fields: [idMaterial], references: [id], onDelete: Restrict)
+
+  @@id([idProducto, idMaterial])
+  @@map("producto_materiales")
+}
+
+model Venta {
+  id          BigInt   @id @default(autoincrement())
+  numeroOrden String   @unique @map("numero_orden")
+  fecha       DateTime @default(now()) @db.Timestamptz(6)
+  idUsuario   BigInt   @map("id_usuario")
+  total       Decimal  @db.Decimal(12, 2)
+
+  usuario  Usuario        @relation(fields: [idUsuario], references: [id], onDelete: Restrict)
+  detalles DetalleVenta[]
+
+  @@index([idUsuario])
+  @@map("ventas")
+}
+
+model DetalleVenta {
+  id             BigInt  @id @default(autoincrement())
+  idVenta        BigInt  @map("id_venta")
+  idProducto     BigInt  @map("id_producto")
+  cantidad       Decimal @db.Decimal(12, 4)
+  precioUnitario Decimal @map("precio_unitario") @db.Decimal(12, 2)
+
+  venta    Venta    @relation(fields: [idVenta], references: [id], onDelete: Cascade)
+  producto Producto @relation(fields: [idProducto], references: [id], onDelete: Restrict)
+
+  @@index([idVenta])
+  @@map("detalle_ventas")
+}

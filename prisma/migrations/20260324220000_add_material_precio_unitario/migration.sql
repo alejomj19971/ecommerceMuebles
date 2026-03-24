@@ -1,0 +1,2 @@
+ALTER TABLE "materiales"
+ADD COLUMN IF NOT EXISTS "precio_unitario" DECIMAL(12,2) NOT NULL DEFAULT 0;

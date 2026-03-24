@@ -1,0 +1,2 @@
+ALTER TABLE "productos"
+ADD COLUMN IF NOT EXISTS "precio_fabricacion" DECIMAL(12,2) NOT NULL DEFAULT 0;
