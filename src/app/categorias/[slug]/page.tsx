@@ -3,7 +3,7 @@ import { ProductCard } from "@/components/home/product-card";
 import { SectionHeader } from "@/components/home/section-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { apiGet } from "@/lib/api-client";
+import { getCatalogProducts } from "@/lib/catalog-products";
 
 type CategorySlug = "sala" | "dormitorio" | "comedor" | "oficina";
 
@@ -22,6 +22,8 @@ function isCategorySlug(value: string): value is CategorySlug {
   return value in categoryNames;
 }
 
+export const revalidate = 60;
+
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
 
@@ -29,16 +31,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const data = await apiGet<{
-    products: Array<{
-      slug: string;
-      name: string;
-      price: string;
-      image: string;
-      tag: string;
-      category: string;
-    }>;
-  }>(`/api/products?category=${encodeURIComponent(slug)}`);
+  const data = await getCatalogProducts({
+    category: slug,
+    take: 48,
+  });
 
   return (
     <div className="min-h-screen bg-[#f5f2ee] text-[#1f1f1f]">

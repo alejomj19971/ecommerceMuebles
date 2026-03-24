@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ProductOptionsClient } from "@/components/product/product-options-client";
-import { apiGet } from "@/lib/api-client";
+import { getCatalogProductBySlug } from "@/lib/catalog-products";
 
 type ProductDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -13,33 +13,8 @@ export default async function ProductDetailPage({
   params,
 }: ProductDetailPageProps) {
   const { slug } = await params;
-  let product:
-    | {
-        slug: string;
-        name: string;
-        tag: string;
-        rating: number | null;
-        image: string;
-        price: string;
-        category: string;
-        description: string;
-      }
-    | null = null;
-  try {
-    const data = await apiGet<{
-      product: {
-        slug: string;
-        name: string;
-        tag: string;
-        rating: number | null;
-        image: string;
-        price: string;
-        category: string;
-        description: string;
-      };
-    }>(`/api/products/${encodeURIComponent(slug)}`);
-    product = data.product;
-  } catch {
+  const product = await getCatalogProductBySlug(slug);
+  if (!product) {
     notFound();
   }
 

@@ -12,21 +12,14 @@ import {
   testimonials,
 } from "@/mocks/home-data";
 
-import { apiGet } from "@/lib/api-client";
+import { getCatalogProducts } from "@/lib/catalog-products";
 import { CATEGORIA_LABELS, type CategoriaSlug } from "@/lib/utils";
 
+/** Catálogo en caché; se actualiza sin redeploy completo. */
+export const revalidate = 60;
+
 export default async function Home() {
-  const data = await apiGet<{
-    products: Array<{
-      slug: string;
-      name: string;
-      price: string;
-      image: string;
-      tag: string;
-      category: string;
-      rating: number | null;
-    }>;
-  }>(`/api/products`);
+  const data = await getCatalogProducts({ take: 48 });
 
   const featuredProducts = [...data.products]
     .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))

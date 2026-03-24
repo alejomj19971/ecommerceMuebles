@@ -2,16 +2,28 @@ import { headers } from "next/headers";
 
 async function getBaseUrl() {
   const h = await headers();
-  const host = h.get("host") ?? null;
-  // Dev normalmente corre en http://localhost:3000
-  const protocol = host?.includes("localhost") ? "http" : "https";
-  if (!host) return "";
+  const rawHost =
+    h.get("x-forwarded-host")?.split(",")[0]?.trim() ??
+    h.get("host") ??
+    process.env.VERCEL_URL ??
+    null;
+
+  if (!rawHost) {
+    return "http://localhost:3000";
+  }
+
+  const host = rawHost.replace(/^https?:\/\//, "");
+  const protocol =
+    host.startsWith("localhost") || host.startsWith("127.0.0.1")
+      ? "http"
+      : "https";
+
   return `${protocol}://${host}`;
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
   const base = await getBaseUrl();
-  const url = base ? `${base}${path}` : path;
+  const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
 
   const res = await fetch(url, {
     cache: "no-store",

@@ -2,17 +2,12 @@ import { CatalogClient } from "@/components/catalog/catalog-client";
 import { SectionHeader } from "@/components/home/section-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { apiGet } from "@/lib/api-client";
+import { getCatalogProducts } from "@/lib/catalog-products";
+
+export const revalidate = 60;
 
 export default async function ProductosPage() {
-  const data = await apiGet<{ products: Array<{
-    slug: string;
-    name: string;
-    price: string;
-    image: string;
-    tag: string;
-    category: string;
-  }> }>(`/api/products`);
+  const data = await getCatalogProducts({ take: 48 });
 
   return (
     <div className="min-h-screen bg-[#f5f2ee] text-[#1f1f1f]">
